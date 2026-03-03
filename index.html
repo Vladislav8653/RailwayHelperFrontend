@@ -1,53 +1,161 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="stylesheet" href="./src/style.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <title>mini-app</title>
+    <link rel="stylesheet" href="./src/style.css" />
+    <title>Railway Helper</title>
   </head>
   <body>
-    <div class="container">
-      <form id="main-form" class="form-stack">
-        <div class="form-group">
-          <label for="station-departure">Станция отправления</label>
-          <input type="text" id="station-departure" placeholder="Станция отправления">
+    <div id="app-root" class="app-root">
+      <!-- Welcome Screen -->
+      <section id="welcome-screen" class="screen screen-active">
+        <header class="welcome-hero">
+          <div class="hero-icon">
+            <div class="hero-icon-train"></div>
+          </div>
+          <h1 class="welcome-title">Свободное место в поезде</h1>
+          <p class="welcome-subtitle">
+            Узнайте, от какой до какой станции ваше место свободно, за пару секунд.
+          </p>
+        </header>
+
+        <div class="welcome-highlights">
+          <div class="chip">Для смартфона</div>
+          <div class="chip">Telegram mini app</div>
+          <div class="chip">Минимум полей — максимум пользы</div>
         </div>
 
-        <div class="form-group">
-          <label for="station-arrival">Станция прибытия</label>
-          <input type="text" id="station-arrival" placeholder="Станция прибытия">
-        </div>
+        <footer class="welcome-footer">
+          <button id="start-btn" class="btn-primary btn-large">
+            Приступить
+          </button>
+        </footer>
+      </section>
 
-        <div class="form-group">
-          <label for="date">Дата отправления</label>
-          <input type="text" id="date" placeholder="Дата отправления">
-        </div>
+      <!-- Main Search Screen -->
+      <section id="search-screen" class="screen">
+        <header class="top-bar">
+          <button id="back-btn" class="icon-btn" aria-label="Назад">
+            ←
+          </button>
+          <div class="top-bar-title">
+            <span class="top-bar-label">Проверка места</span>
+            <span class="top-bar-hint">Заполните данные билета</span>
+          </div>
+        </header>
 
-        <div class="form-group">
-          <label for="train-number">Номер поезда</label>
-          <input type="text" id="train-number" placeholder="Номер поезда">
-        </div>
+        <main class="content">
+          <form id="main-form" class="card">
+            <div class="form-stack">
+              <div class="form-group">
+                <label for="station-departure">Станция отправления</label>
+                <input
+                  type="text"
+                  id="station-departure"
+                  placeholder="Например, Москва"
+                  autocomplete="off"
+                />
+              </div>
 
-        <div class="form-group">
-          <label for="carriage-number">Номер вагона</label>
-          <input type="number" id="carriage-number" placeholder="Номер вагона">
-        </div>
+              <div class="form-group">
+                <label for="station-arrival">Станция прибытия</label>
+                <input
+                  type="text"
+                  id="station-arrival"
+                  placeholder="Например, Санкт-Петербург"
+                  autocomplete="off"
+                />
+              </div>
 
-        <div class="form-group">
-          <label for="carriage-type">Тип вагона</label>
-          <input type="text" id="carriage-type" placeholder="Тип вагона">
-        </div>
+              <div class="form-group">
+                <label for="date">Дата отправления</label>
+                <input
+                  type="date"
+                  id="date"
+                  inputmode="none"
+                />
+              </div>
 
-        <div class="form-group">
-          <label for="place-number">Номер места</label>
-          <input type="number" id="place-number" placeholder="Номер места">
-        </div>
-        
-        <button type="submit" class="submit-btn">Проверить место</button>
-      </form>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="train-number">Номер поезда</label>
+                  <input
+                    type="text"
+                    id="train-number"
+                    placeholder="Н-р, 123А"
+                    inputmode="numeric"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="carriage-number">Номер вагона</label>
+                  <input
+                    type="number"
+                    id="carriage-number"
+                    placeholder="01"
+                    inputmode="numeric"
+                  />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="carriage-type">Тип вагона</label>
+                  <input
+                    type="text"
+                    id="carriage-type"
+                    placeholder="Купе, сидячий…"
+                    autocomplete="off"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="place-number">Номер места</label>
+                  <input
+                    type="number"
+                    id="place-number"
+                    placeholder="12"
+                    inputmode="numeric"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary btn-full" id="check-btn">
+              Проверить
+            </button>
+
+            <!-- Progress Block -->
+            <div id="progress-block" class="progress-block" aria-hidden="true">
+              <div class="progress-header">
+                <span class="progress-title">Ищем свободные сегменты…</span>
+                <span class="progress-hint">Обычно это занимает пару секунд</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-bar-fill"></div>
+              </div>
+            </div>
+
+            <!-- Result Block -->
+            <div id="result-card" class="result-card" aria-hidden="true">
+              <div class="result-badge">Найдено</div>
+              <h2 class="result-title">Место свободно</h2>
+              <p class="result-text" id="result-text">
+                От станции А до станции Б.
+              </p>
+              <p class="result-meta" id="result-meta">
+                Поезд · Вагон · Место
+              </p>
+            </div>
+          </form>
+        </main>
+      </section>
     </div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
