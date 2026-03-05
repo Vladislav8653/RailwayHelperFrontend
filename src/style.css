@@ -159,6 +159,30 @@ body {
   color: #9ca3af;
 }
 
+.welcome-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #9ca3af;
+}
+
+.welcome-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.welcome-benefits p {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #e5e7eb;
+}
+
+.benefit-label {
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
 .welcome-highlights {
   margin-top: 8px;
   display: flex;

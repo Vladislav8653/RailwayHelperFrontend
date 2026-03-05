@@ -18,16 +18,34 @@
           <div class="hero-icon">
             <div class="hero-icon-train"></div>
           </div>
-          <h1 class="welcome-title">Свободное место в поезде</h1>
+          <h1 class="welcome-title">Ваше личное пространство под контролем.</h1>
           <p class="welcome-subtitle">
-            Узнайте, от какой до какой станции ваше место свободно, за пару секунд.
+            Знакомая ситуация: вы заняли место в поезде, разложили вещи на соседнем кресле и
+            не знаете, когда зайдет пассажир, купившей это место. На каждой станции
+            приходится с тревогой поглядывать на входящих пассажиров.
           </p>
+          <p class="welcome-body">
+            Приложение избавляет от этой неопределённости - мы анализируем маршрут поезда и статус
+            каждого места.
+          </p>
+
+          <div class="welcome-benefits">
+            <p>
+              <span class="benefit-label">Видьте будущее.</span>
+              Узнайте, свободно ли место рядом до вашей конечной станции или его купят через две
+              остановки.
+            </p>
+            <p>
+              <span class="benefit-label">Отдыхайте уверенно.</span>
+              Разложите вещи или поспите, точно зная, сколько у вас времени в запасе.
+            </p>
+          </div>
         </header>
 
         <div class="welcome-highlights">
-          <div class="chip">Для смартфона</div>
-          <div class="chip">Telegram mini app</div>
-          <div class="chip">Минимум полей — максимум пользы</div>
+          <div class="chip">Узнайте, когда появится сосед</div>
+          <div class="chip">Контроль личного пространства</div>
+          <div class="chip">Минимум действий — максимум спокойствия</div>
         </div>
 
         <footer class="welcome-footer">
@@ -36,8 +54,7 @@
           </button>
         </footer>
       </section>
-
-      <!-- Main Search Screen -->
+        
       <section id="search-screen" class="screen">
         <header class="top-bar">
           <button id="back-btn" class="icon-btn" aria-label="Назад">
@@ -57,7 +74,7 @@
                 <input
                   type="text"
                   id="station-departure"
-                  placeholder="Например, Москва"
+                  placeholder="Минск-Пассажирский"
                   autocomplete="off"
                 />
               </div>
@@ -67,7 +84,7 @@
                 <input
                   type="text"
                   id="station-arrival"
-                  placeholder="Например, Санкт-Петербург"
+                  placeholder="Брест-Центральный"
                   autocomplete="off"
                 />
               </div>
@@ -87,7 +104,7 @@
                   <input
                     type="text"
                     id="train-number"
-                    placeholder="Н-р, 123А"
+                    placeholder="707А"
                     inputmode="numeric"
                     autocomplete="off"
                   />
@@ -109,7 +126,7 @@
                   <input
                     type="text"
                     id="carriage-type"
-                    placeholder="Купе, сидячий…"
+                    placeholder="2П, 3Э…"
                     autocomplete="off"
                   />
                 </div>
@@ -128,8 +145,7 @@
             <button type="submit" class="btn-primary btn-full" id="check-btn">
               Проверить
             </button>
-
-            <!-- Progress Block -->
+              
             <div id="progress-block" class="progress-block" aria-hidden="true">
               <div class="progress-header">
                 <span class="progress-title">Ищем свободные сегменты…</span>
@@ -140,7 +156,7 @@
               </div>
             </div>
 
-            <!-- Result Block -->
+           
             <div id="result-card" class="result-card" aria-hidden="true">
               <div class="result-badge">Найдено</div>
               <h2 class="result-title">Место свободно</h2>
