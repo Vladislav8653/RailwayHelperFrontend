@@ -123,3 +123,39 @@ try {
 } catch {
   // ignore
 }
+
+function debounce(func, timeout = 300){
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            func.apply(this, args);
+        }, timeout);
+    };
+}
+const processChangeInput = debounce((input) => getStationName(input))
+
+async function getStationName(input) {
+    if (!input) return;
+    if (input.length < 3) return;
+    const url = "http://localhost:5196/search";
+    try {
+        const response = await fetch(url + "?name=" + encodeURIComponent(input));
+        if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log(result);
+        return result;
+    } catch (error) {
+        console.error(error.message);
+        throw new Error(`Error: ${error.message}`);
+    }
+}
+
+
+departureInput.addEventListener("input", (event) => {
+    console.log(departureInput.value);
+    processChangeInput(event.target.value);
+});
