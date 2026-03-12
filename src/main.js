@@ -18,6 +18,8 @@ const typeInput = document.getElementById("carriage-type");
 const placeInput = document.getElementById("place-number");
 
 let progressTimeoutId = null;
+let departureStation = null;
+let arrivalStation = null;
 
 function showScreen(screenId) {
   if (!welcomeScreen || !searchScreen) return;
@@ -95,6 +97,73 @@ function handleSearchSubmit(event) {
   }, 1400);
 }
 
+function createStationSuggestionItem(item, onSelect) {
+  const el = document.createElement("div");
+  el.className = "station-suggestion-item";
+
+  const nameSpan = document.createElement("span");
+  nameSpan.className = "station-suggestion-name";
+  nameSpan.textContent = item.value;
+
+  el.appendChild(nameSpan);
+
+  el.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+    onSelect(item);
+  });
+
+  return el;
+}
+
+function setupStationAutocomplete(input, listEl, setStation) {
+  if (!input || !listEl) return;
+
+  const clearList = () => {
+    listEl.innerHTML = "";
+    listEl.classList.remove("station-suggestions-visible");
+  };
+
+  const debouncedSearch = debounce(async (text) => {
+    try {
+      const stations = await getStationName(text);
+      clearList();
+
+      if (!stations || !stations.length) {
+        return;
+      }
+
+      stations.forEach((item) => {
+        const el = createStationSuggestionItem(item, (selected) => {
+          input.value = selected.value;
+          setStation({ value: selected.value, exp: selected.exp });
+          clearList();
+        });
+        listEl.appendChild(el);
+      });
+
+      listEl.classList.add("station-suggestions-visible");
+    } catch {
+      clearList();
+    }
+  }, 300);
+
+  input.addEventListener("input", (event) => {
+    const text = event.target.value;
+    setStation(null);
+
+    if (!text || text.length < 3) {
+      clearList();
+      return;
+    }
+
+    debouncedSearch(text);
+  });
+
+  input.addEventListener("blur", () => {
+    setTimeout(clearList, 120);
+  });
+}
+
 if (startBtn) {
   startBtn.addEventListener("click", () => {
     showScreen("search");
@@ -133,7 +202,7 @@ function debounce(func, timeout = 300){
         }, timeout);
     };
 }
-const processChangeInput = debounce((input) => getStationName(input))
+const processChangeInput = debounce((input) => getStationName(input));
 
 async function getStationName(input) {
     if (!input) return;
@@ -159,3 +228,22 @@ departureInput.addEventListener("input", (event) => {
     console.log(departureInput.value);
     processChangeInput(event.target.value);
 });
+
+const departureList = document.querySelector('.station-suggestions[data-for="station-departure"]');
+const arrivalList = document.querySelector('.station-suggestions[data-for="station-arrival"]');
+
+setupStationAutocomplete(
+  departureInput,
+  departureList,
+  (station) => {
+    departureStation = station;
+  }
+);
+
+setupStationAutocomplete(
+  arrivalInput,
+  arrivalList,
+  (station) => {
+    arrivalStation = station;
+  }
+);

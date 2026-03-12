@@ -69,7 +69,7 @@
         <main class="content">
           <form id="main-form" class="card">
             <div class="form-stack">
-              <div class="form-group">
+              <div class="form-group autocomplete-wrapper">
                 <label for="station-departure">Станция отправления</label>
                 <input
                   type="text"
@@ -77,9 +77,10 @@
                   placeholder="Минск-Пассажирский"
                   autocomplete="off"
                 />
+                <div class="station-suggestions" data-for="station-departure"></div>
               </div>
 
-              <div class="form-group">
+              <div class="form-group autocomplete-wrapper">
                 <label for="station-arrival">Станция прибытия</label>
                 <input
                   type="text"
@@ -87,6 +88,7 @@
                   placeholder="Брест-Центральный"
                   autocomplete="off"
                 />
+                <div class="station-suggestions" data-for="station-arrival"></div>
               </div>
 
               <div class="form-group">
