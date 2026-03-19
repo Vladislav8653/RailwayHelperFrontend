@@ -67,11 +67,15 @@ export class SearchForm {
     async handleSubmit(e) {
         e.preventDefault();
         this.toggleProgress(true);
-        
-        await this.onSearch(this.carriageState.toApiFormat());
 
-        this.toggleProgress(false);
-        this.showResult();
+        try {
+            const data = await this.onSearch(this.carriageState.toApiFormat());
+            this.toggleProgress(false);
+            this.showResult(data); 
+        } catch (error) {
+            this.toggleProgress(false);
+            console.error("Ошибка при поиске", error);
+        }
     }
     
     toggleProgress(show) {
@@ -79,8 +83,51 @@ export class SearchForm {
         this.checkBtn.disabled = show;
         if (show) this.resultCard.classList.remove("result-card-visible");
     }
+    
+    showResult(data) {
+        if (!this.resultCard) return;
 
-    showResult() {
+        const resultText = this.form.querySelector("#result-text");
+        const resultTitle = this.form.querySelector(".result-title");
+        const resultBadge = this.form.querySelector(".result-badge");
+        
+        resultText.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            // СЛУЧАЙ: Место занято
+            this.resultCard.style.border = "1px solid rgba(239, 68, 68, 0.44)"; // Красная граница
+            this.resultCard.style.background = "radial-gradient(circle at top left, #ef444433 0, #ef444406 55%), rgba(15, 23, 42, 0.95)";
+
+            resultBadge.textContent = "Занято";
+            resultBadge.style.background = "rgba(220, 38, 38, 0.14)";
+            resultBadge.style.color = "#fca5a5";
+
+            resultTitle.textContent = "Место выкуплено";
+            resultText.textContent = "Место выкуплено на всем маршруте.";
+        } else {
+            // СЛУЧАЙ: Есть свободные сегменты
+            this.resultCard.style.border = "1px solid rgba(34, 197, 94, 0.44)"; // Зеленая граница (дефолт)
+            this.resultCard.style.background = ""; 
+
+            resultBadge.textContent = "Свободно";
+            resultBadge.style.background = "rgba(22, 163, 74, 0.14)";
+            resultBadge.style.color = "#bbf7d0";
+
+            resultTitle.textContent = "Место свободно:";
+            
+            const listHtml = data.map(segment => `
+            <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                <span style="color: #22c55e;">●</span>
+                <span>${segment.stationFrom.value} → ${segment.stationTo.value}</span>
+            </div>
+        `).join("");
+
+            resultText.innerHTML = listHtml;
+        }
+        
+        const meta = this.form.querySelector("#result-meta");
+        meta.textContent = `${this.carriageState.trainNumber} · Вагон ${this.carriageState.carNumber} · Место ${this.carriageState.placeNumber}`;
+
         this.resultCard.classList.add("result-card-visible");
     }
    
