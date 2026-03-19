@@ -11,11 +11,9 @@ export class StationList {
             this.container.classList.remove("station-suggestions-visible");
             return;
         }
-        console.log("Данные, пришедшие в список:", stations);
         const fragment = document.createDocumentFragment();
 
         stations.forEach(station => {
-            console.log("Рисую станцию:", station.stationName);
             const item = document.createElement("div");
             item.className = "station-suggestion-item";
 

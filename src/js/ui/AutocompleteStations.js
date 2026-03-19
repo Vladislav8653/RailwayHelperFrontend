@@ -1,7 +1,7 @@
 import { StationList } from './StationList.js';
 import { debounce } from '../utils/debounce.js';
 
-export class Autocomplete {
+export class AutocompleteStations {
     constructor(config) {
         this.input = config.input;
         this.searchProvider = config.searchProvider;
@@ -35,10 +35,8 @@ export class Autocomplete {
     async performSearch(value) {
         try {
             const stations = await this.searchProvider(value);
-            console.log('Данные получены:', stations); 
             this.list.render(stations);
         } catch (error) {
-            console.error("Ошибка поиска:", error);
             this.list.clear();
         }
     }
