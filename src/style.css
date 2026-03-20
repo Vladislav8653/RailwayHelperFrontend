@@ -532,3 +532,32 @@ input[type="date"] {
   }
 }
 
+/* ios problem */
+input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    
+    box-sizing: border-box;
+    
+    min-width: 0;
+    width: 100%;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 10px;
+    opacity: 0; 
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+    min-height: 1.5em;
+}
+
+.form-group {
+    width: 100%;
+    position: relative;
+}
