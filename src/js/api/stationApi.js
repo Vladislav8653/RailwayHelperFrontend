@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = "https://railwayhelper-ftbwejdqashth4ew.polandcentral-01.azurewebsites.net"
 
 export async function fetchStations(query) {
     if (!query) return [];
