@@ -1,4 +1,4 @@
-const BASE_URL = "https://railwayhelper-ftbwejdqashth4ew.polandcentral-01.azurewebsites.net"
+export const BASE_URL = "https://railwayhelper-ftbwejdqashth4ew.polandcentral-01.azurewebsites.net"
 
 export async function fetchStations(query) {
     if (!query) return [];

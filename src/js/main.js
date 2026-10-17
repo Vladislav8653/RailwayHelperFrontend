@@ -1,6 +1,7 @@
 import { ScreenManager } from './ui/ScreenManager.js';
 import {SearchForm} from "./ui/SearchForm.js";
 import {fetchPlaceInfo, fetchStations} from "./api/stationApi.js";
+import {DevTools} from "./ui/DevTools.js";
 
 const screens = new ScreenManager();
 
@@ -15,3 +16,5 @@ const searchForm = new SearchForm("main-form", async (params) => {
 
     return result;
 });
+
+new DevTools();
