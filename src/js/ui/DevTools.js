@@ -1,4 +1,4 @@
-import { fetchLogs, fetchMetrics } from "../api/devApi.js";
+import { fetchExternalLogs, fetchExternalMetrics, fetchLogs, fetchMetrics } from "../api/devApi.js";
 
 const escapeHtml = (value) =>
     String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -31,6 +31,7 @@ export class DevTools {
         this.search = document.getElementById("dev-search");
         this.errorsOnly = document.getElementById("dev-errors-only");
         this.auto = document.getElementById("dev-auto");
+        this.source = "backend"; // "backend" | "external"
         this.tab = "metrics";
         this.timer = null;
         this.openLogs = new Set();
@@ -42,10 +43,12 @@ export class DevTools {
         document.addEventListener("click", (e) => {
             if (!this.menu.contains(e.target)) this.toggleMenu(false);
         });
-        this.menu.querySelector('[data-action="logs"]').onclick = () => {
-            this.toggleMenu(false);
-            this.openPanel();
-        };
+        this.menu.querySelectorAll("[data-action]").forEach((item) => {
+            item.onclick = () => {
+                this.toggleMenu(false);
+                this.openPanel(item.dataset.action === "external" ? "external" : "backend");
+            };
+        });
         document.getElementById("dev-panel-close").onclick = () => this.closePanel();
         document.getElementById("dev-refresh").onclick = () => this.refresh();
         this.panel.querySelectorAll(".dev-tab").forEach((t) => {
@@ -69,7 +72,11 @@ export class DevTools {
         this.btn.setAttribute("aria-expanded", String(open));
     }
 
-    openPanel() {
+    openPanel(source) {
+        this.source = source;
+        document.getElementById("dev-panel-title").textContent =
+            source === "external" ? "Запросы к БЧ" : "Логи и метрики";
+        this.openLogs.clear();
         this.panel.hidden = false;
         this.refresh();
         this.updateTimer();
@@ -97,8 +104,15 @@ export class DevTools {
 
     async refresh() {
         try {
+            const external = this.source === "external";
             if (this.tab === "metrics") {
-                this.renderMetrics(await fetchMetrics());
+                this.renderMetrics(await (external ? fetchExternalMetrics() : fetchMetrics()), external);
+            } else if (external) {
+                this.renderExternalLogs(await fetchExternalLogs({
+                    limit: 100,
+                    errorsOnly: this.errorsOnly.checked,
+                    search: this.search.value.trim() || undefined,
+                }));
             } else {
                 const logs = await fetchLogs({
                     limit: 100,
@@ -114,7 +128,10 @@ export class DevTools {
         }
     }
 
-    renderMetrics(m) {
+    renderMetrics(m, external = false) {
+        if (external) {
+            m = { ...m, totalRequests: m.totalCalls, requestsLastMinute: m.callsLastMinute, errors4xx: m.failedCalls, errors5xx: "—", process: { memoryMb: "—", threads: "—" }, uptimeSeconds: Math.floor((Date.now() - new Date(m.startedUtc)) / 1000) };
+        }
         const tile = (label, value) => `<div class="dev-tile"><div class="dev-tile-value">${escapeHtml(value)}</div><div class="dev-tile-label">${label}</div></div>`;
         const codes = Object.entries(m.statusCodes)
             .map(([code, n]) => `<span class="dev-chip ${statusClass(+code)}">${code} × ${n}</span>`).join("") || "—";
@@ -125,14 +142,11 @@ export class DevTools {
             <div class="dev-tiles">
                 ${tile("Всего запросов", m.totalRequests)}
                 ${tile("За минуту", m.requestsLastMinute)}
-                ${tile("4xx", m.errors4xx)}
-                ${tile("5xx", m.errors5xx)}
+                ${external ? tile("Неудачных", m.errors4xx) : tile("4xx", m.errors4xx) + tile("5xx", m.errors5xx)}
                 ${tile("Avg, мс", m.latencyMs.avg)}
                 ${tile("p95, мс", m.latencyMs.p95)}
                 ${tile("Max, мс", m.latencyMs.max)}
-                ${tile("Память, МБ", m.process.memoryMb)}
-                ${tile("Uptime", formatUptime(m.uptimeSeconds))}
-                ${tile("Потоки", m.process.threads)}
+                ${external ? "" : tile("Память, МБ", m.process.memoryMb) + tile("Uptime", formatUptime(m.uptimeSeconds)) + tile("Потоки", m.process.threads)}
             </div>
             <h3 class="dev-h">Статусы (последние ${m.bufferedLogs})</h3>
             <div class="dev-chips">${codes}</div>
@@ -143,6 +157,33 @@ export class DevTools {
                     <tbody>${rows || '<tr><td colspan="5">Запросов пока нет</td></tr>'}</tbody>
                 </table>
             </div>`;
+    }
+
+    renderExternalLogs(logs) {
+        if (!logs.length) {
+            this.content.innerHTML = '<div class="dev-empty">Запросов к БЧ пока не было</div>';
+            return;
+        }
+        const kv = (obj) => Object.entries(obj ?? {}).map(([k, v]) => `${escapeHtml(k)}: ${escapeHtml(v)}`).join("\n") || "—";
+        this.content.innerHTML = logs.map((l) => `
+            <details class="dev-log" data-id="x${l.id}" ${this.openLogs.has(`x${l.id}`) ? "open" : ""}>
+                <summary>
+                    <span class="dev-chip ${l.statusCode ? statusClass(l.statusCode) : "dev-s-5xx"}">${l.statusCode ?? "ERR"}</span>
+                    <span class="dev-method">${escapeHtml(l.method)}</span>
+                    <span class="dev-path">${escapeHtml(l.host)}${escapeHtml(l.path)}</span>
+                    <span class="dev-ms">${l.durationMs} мс</span>
+                </summary>
+                <div class="dev-log-body">
+                    <div class="dev-meta">${new Date(l.timestampUtc).toLocaleString()}${l.parentRequestId ? ` · вызван запросом #${l.parentRequestId}` : ""} · ${l.responseSizeBytes ?? "?"} байт</div>
+                    <h4>Реальный URL</h4><pre>${escapeHtml(l.url)}</pre>
+                    <h4>Query</h4><pre>${kv(l.query)}</pre>
+                    <h4>Request headers</h4><pre>${kv(l.requestHeaders)}</pre>
+                    <h4>Request body</h4><pre>${escapeHtml(prettyBody(l.requestBody))}</pre>
+                    <h4>Response: ${l.statusCode ?? "—"} ${escapeHtml(l.reasonPhrase ?? "")}</h4><pre>${kv(l.responseHeaders)}</pre>
+                    <h4>Response body</h4><pre>${escapeHtml(prettyBody(l.responseBody))}</pre>
+                    ${l.error ? `<h4>Error</h4><pre>${escapeHtml(l.error)}</pre>` : ""}
+                </div>
+            </details>`).join("");
     }
 
     renderLogs(logs) {

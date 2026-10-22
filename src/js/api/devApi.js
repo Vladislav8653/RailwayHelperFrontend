@@ -16,3 +16,12 @@ export function fetchLogs({ limit = 100, statusFrom, search } = {}) {
     if (search) params.set("search", search);
     return getJson(`/dev/logs?${params}`);
 }
+
+export const fetchExternalMetrics = () => getJson("/dev/external/metrics");
+
+export function fetchExternalLogs({ limit = 100, errorsOnly, search } = {}) {
+    const params = new URLSearchParams({ limit });
+    if (errorsOnly) params.set("errorsOnly", "true");
+    if (search) params.set("search", search);
+    return getJson(`/dev/external/logs?${params}`);
+}
